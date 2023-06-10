@@ -99,7 +99,7 @@ public:
 
     int getCost(const TElem& source, const TElem& target)
     {
-        if (!this->isVertex(source) || !this->isVertex(target))
+        if (!this->isEdge(source, target))
             throw std::exception();
 
         return this->costs[std::pair<TElem, TElem>(source, target)];
@@ -125,6 +125,7 @@ public:
             return false;
 
         this->costs.erase(std::pair<TElem, TElem>(source, target));
+        this->costs.erase(std::pair<TElem, TElem>(target, source));
 
         auto positionIterator = std::find(this->neighbours[source].begin(), this->neighbours[source].end(), target);
         this->neighbours[source].erase(positionIterator);
