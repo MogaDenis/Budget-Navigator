@@ -89,9 +89,7 @@ public:
         }
 
         this->neighbours.erase(std::find_if(this->neighbours.begin(), this->neighbours.end(),
-                        [&](const std::pair<TElem, std::vector<TElem>>& vertexNeighboursPair){ return this->equalityFunction(vertex, vertexNeighboursPair.first); }));
-
-        // this->neighbours.erase(vertex);
+            [&](const std::pair<TElem, std::vector<TElem>>& vertexNeighboursPair){ return this->equalityFunction(vertex, vertexNeighboursPair.first); }));
 
         return true;
     }
@@ -132,8 +130,6 @@ public:
                 return this->costs[edgeCostPair.first];
 
         return 0;
-
-        // return this->costs[std::pair<TElem, TElem>(source, target)];
     }
 
     bool addEdge(const TElem& source, const TElem& target, int cost)

@@ -44,7 +44,10 @@ std::vector<std::string> City::getSights() const
 std::string City::toString() const
 {
     std::string cityString = "City: ";
-    cityString = cityString + this->name + " - Sights: ";
+    cityString = cityString + this->name;
+
+    if (!this->sights.empty())
+        cityString += " - Sights: ";
 
     bool first = true;
     for (const std::string& sight : this->sights)
