@@ -15,8 +15,18 @@ private:
     std::map<std::pair<TElem, TElem>, int> costs;
     std::vector<TElem> vertices;
 
+    using EqualityFunction = bool(*)(const TElem&, const TElem&);
+    EqualityFunction equalityFunction;
+
 public:
     Graph()
+    {
+        this->vertices = std::vector<TElem>();
+        this->neighbours = std::map<TElem, std::vector<TElem>>();
+        this->costs = std::map<std::pair<TElem, TElem>, int>();
+    }   
+
+    Graph(EqualityFunction eqFunc) : equalityFunction(eqFunc)
     {
         this->vertices = std::vector<TElem>();
         this->neighbours = std::map<TElem, std::vector<TElem>>();
@@ -62,7 +72,8 @@ public:
 
     bool deleteVertex(const TElem& vertex)
     {
-        auto positionIterator = std::find(this->vertices.begin(), this->vertices.end(), vertex);
+        auto positionIterator = std::find_if(this->vertices.begin(), this->vertices.end(),
+                                            [&](const TElem& currentVertex){ return this->equalityFunction(vertex, currentVertex); });
 
         if (positionIterator == this->vertices.end())
             return false;
@@ -71,19 +82,24 @@ public:
 
         for (const TElem& neighbour : this->neighbours[vertex])
         {
-            positionIterator = std::find(this->neighbours[neighbour].begin(), this->neighbours[neighbour].end(), vertex);
+            positionIterator = std::find_if(this->neighbours[neighbour].begin(), this->neighbours[neighbour].end(),
+                                            [&](const TElem& currentVertex){ return this->equalityFunction(vertex, currentVertex); });
 
             this->neighbours[neighbour].erase(positionIterator);
         }
 
-        this->neighbours.erase(vertex);
+        this->neighbours.erase(std::find_if(this->neighbours.begin(), this->neighbours.end(),
+                        [&](const std::pair<TElem, std::vector<TElem>>& vertexNeighboursPair){ return this->equalityFunction(vertex, vertexNeighboursPair.first); }));
+
+        // this->neighbours.erase(vertex);
 
         return true;
     }
 
     bool isVertex(const TElem& vertex) const
     {
-        if (std::find(this->vertices.begin(), this->vertices.end(), vertex) == this->vertices.end())
+        if (std::find_if(this->vertices.begin(), this->vertices.end(), 
+                        [&](const TElem& currentVertex){ return this->equalityFunction(vertex, currentVertex); }) == this->vertices.end())
             return false;
 
         return true;
@@ -94,7 +110,16 @@ public:
         if (!this->isVertex(source) || !this->isVertex(target))
             return false;
 
-        return this->costs.count(std::pair<TElem, TElem>(source, target)) != 0;
+        for (const std::pair<const std::pair<TElem, TElem>, int>& edgeCostPair : this->costs)
+        {
+            if (this->equalityFunction(edgeCostPair.first.first, source) && this->equalityFunction(edgeCostPair.first.second, target))
+                return true;
+
+            if (this->equalityFunction(edgeCostPair.first.first, target) && this->equalityFunction(edgeCostPair.first.second, source))
+                return true;
+        }
+
+        return false;
     }
 
     int getCost(const TElem& source, const TElem& target)
@@ -102,7 +127,13 @@ public:
         if (!this->isEdge(source, target))
             throw std::exception();
 
-        return this->costs[std::pair<TElem, TElem>(source, target)];
+        for (const std::pair<const std::pair<TElem, TElem>, int>& edgeCostPair : this->costs)
+            if (this->equalityFunction(edgeCostPair.first.first, source) && this->equalityFunction(edgeCostPair.first.second, target))
+                return this->costs[edgeCostPair.first];
+
+        return 0;
+
+        // return this->costs[std::pair<TElem, TElem>(source, target)];
     }
 
     bool addEdge(const TElem& source, const TElem& target, int cost)
@@ -124,15 +155,57 @@ public:
         if (!this->isEdge(source, target))
             return false;
 
-        this->costs.erase(std::pair<TElem, TElem>(source, target));
-        this->costs.erase(std::pair<TElem, TElem>(target, source));
+        auto firstIterator = this->costs.end();
+        auto secondIterator = this->costs.end();
+        auto currentIterator = this->costs.begin();
 
-        auto positionIterator = std::find(this->neighbours[source].begin(), this->neighbours[source].end(), target);
+        for (const std::pair<const std::pair<TElem, TElem>, int>& edgeCostPair : this->costs)
+        {
+            if (this->equalityFunction(edgeCostPair.first.first, source) && this->equalityFunction(edgeCostPair.first.second, target))
+                firstIterator = currentIterator;
+
+            else if (this->equalityFunction(edgeCostPair.first.first, target) && this->equalityFunction(edgeCostPair.first.second, source))
+            {
+                secondIterator = currentIterator;
+                break;
+            }
+
+            currentIterator++;
+        }
+
+        this->costs.erase(firstIterator);
+        this->costs.erase(secondIterator);
+
+        auto positionIterator = std::find_if(this->neighbours[source].begin(), this->neighbours[source].end(),
+                                            [&](const TElem& currentVertex){ return this->equalityFunction(currentVertex, target); });
         this->neighbours[source].erase(positionIterator);
-        positionIterator = std::find(this->neighbours[target].begin(), this->neighbours[target].end(), source);
+
+        positionIterator = std::find_if(this->neighbours[target].begin(), this->neighbours[target].end(),
+                                    [&](const TElem& currentVertex){ return this->equalityFunction(currentVertex, source); });
         this->neighbours[target].erase(positionIterator);
 
         return true;
+
+        return false;
+    }
+
+    int searchVertex(const TElem& vertex) const 
+    {
+        auto positionIterator = std::find_if(this->vertices.begin(), this->vertices.end(), 
+                                            [&](const TElem& currentVertex){ return this->equalityFunction(currentVertex, vertex); });
+
+        if (positionIterator == this->vertices.end())
+            return -1;
+
+        return (int)std::distance(this->vertices.begin(), positionIterator);
+    }
+
+    TElem& getVertex(int index)
+    {
+        if (index < 0 || index >= this->size())
+            throw std::exception();
+
+        return this->vertices.at(index);
     }
 
     // Implemented using Dijkstra's algorithm.

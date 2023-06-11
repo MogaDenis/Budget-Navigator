@@ -7,16 +7,15 @@ City::City(std::string& name, std::vector<std::string>& sights) : Location(name)
     this->sights = sights;
 }
 
+City::City(std::string& name) : Location(name)
+{
+
+}
+
 bool City::operator == (const City& city) const
 {
     if (this->name != city.name)
         return false;
-
-    for (const std::string& sight : this->sights)
-    {
-        if (std::find(city.sights.begin(), city.sights.end(), sight) == city.sights.end())
-            return false;
-    }
 
     return true;
 }

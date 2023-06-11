@@ -10,6 +10,7 @@ private:
 
 public:
     City(std::string& name, std::vector<std::string>& sights);
+    City(std::string& name);
     ~City() override {};
 
     bool operator == (const City& city) const;

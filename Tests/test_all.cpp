@@ -5,7 +5,6 @@
 #include <assert.h>
 #include <iostream>
 
-
 void testAll()
 {
     testGraph();
@@ -34,9 +33,14 @@ void testRepository()
     testRepositoryLinkAndUnlink();
 }
 
+bool equalInts(const int& first, const int& second)
+{
+    return first == second;
+}
+
 void testGraphConstructor()
 {
-    Graph<int> testGraph{};
+    Graph<int> testGraph{equalInts};
 
     assert(testGraph.isEmpty());
     assert(testGraph.size() == 0);
@@ -44,7 +48,7 @@ void testGraphConstructor()
 
 void testGraphAdd()
 {
-    Graph<int> testGraph{};
+    Graph<int> testGraph{equalInts};
 
     int source = 1, target = 2, cost = 3;
     testGraph.addVertex(source);
@@ -60,7 +64,7 @@ void testGraphAdd()
 
 void testGraphDelete()
 {
-    Graph<int> testGraph{};
+    Graph<int> testGraph{equalInts};
 
     int source = 1, target = 2, cost = 3;
     testGraph.addVertex(source);
@@ -83,7 +87,7 @@ void testGraphDelete()
 
 void testGraphParse()
 {
-    Graph<int> testGraph{};
+    Graph<int> testGraph{equalInts};
 
     int source = 1, target = 2, cost = 3;
     testGraph.addVertex(source);
@@ -102,7 +106,7 @@ void testGraphParse()
 
 void testGraphMinCostPath()
 {
-    Graph<int> testGraph{};
+    Graph<int> testGraph{equalInts};
 
     int vertex1 = 1, vertex2 = 2, vertex3 = 3, vertex4 = 4, vertex5 = 5, vertex6 = 6;
     testGraph.addVertex(vertex1);
@@ -124,7 +128,7 @@ void testGraphMinCostPath()
     testGraph.addEdge(vertex5, vertex6, 5);
 
     int totalCost = 0;
-    std::vector<int> path1{1, 3, 2};
+    std::vector<int> path1{vertex1, vertex3, vertex2};
     assert(testGraph.minimumCostPath(vertex1, vertex2, totalCost) == path1);
     assert(totalCost == 4);
 
@@ -149,117 +153,89 @@ void testCity()
 
 void testRepositoryConstructor()
 {
-    Repository testRepository{};
+    Repository<int> testRepository{equalInts};
 
     assert(testRepository.size() == 0);
     assert(testRepository.isEmpty());
-    assert(testRepository.getAllLocations().size() == 0);
+    assert(testRepository.getAllelements().size() == 0);
 }
 
 void testRepositoryAdd()
 {
-    Repository testRepository{};
+    Repository<int> testRepository{equalInts};
 
-    std::string name1{"name"};
-    std::vector<std::string> sights1{"house", "park"};
-    std::shared_ptr<Location> location1 = std::make_shared<City>(name1, sights1);
+    int elem1 = 1, elem2 = 2;
 
-    assert(testRepository.addLocation(location1));
-    assert(!testRepository.addLocation(location1));
+    assert(testRepository.addElement(elem1));
+    assert(!testRepository.addElement(elem1));
 
-    std::string name2{"another name"};
-    std::vector<std::string> sights2{"house", "park"};
-    std::shared_ptr<Location> location2 = std::make_shared<City>(name2, sights2);
-
-    assert(testRepository.addLocation(location2));
+    assert(testRepository.addElement(elem2));
 
     assert(testRepository.size() == 2);
 }
 
 void testRepositoryDelete()
 {
-    Repository testRepository{};
+    Repository<int> testRepository{equalInts};
 
-    std::string name1{"name"};
-    std::vector<std::string> sights1{"house", "park"};
-    std::shared_ptr<Location> location1 = std::make_shared<City>(name1, sights1);
+    int elem1 = 1, elem2 = 2;
 
-    std::string name2{"another name"};
-    std::vector<std::string> sights2{"house", "park"};
-    std::shared_ptr<Location> location2 = std::make_shared<City>(name2, sights2);
+    testRepository.addElement(elem1);
+    testRepository.addElement(elem2);
 
-    testRepository.addLocation(location1);
-    testRepository.addLocation(location2);
-
-    assert(testRepository.deleteLocation(location1));
-    assert(!testRepository.deleteLocation(location1));
-    assert(testRepository.deleteLocation(location2));
+    assert(testRepository.deleteElement(elem1));
+    assert(!testRepository.deleteElement(elem1));
+    assert(testRepository.deleteElement(elem2));
 
     assert(testRepository.size() == 0);
 }
 
 void testRepositoryGetAll()
 {
-    Repository testRepository{};
+    Repository<int> testRepository{equalInts};
 
-    std::string name1{"name"};
-    std::vector<std::string> sights1{"house", "park"};
-    std::shared_ptr<Location> location1 = std::make_shared<City>(name1, sights1);
+    int elem1 = 1, elem2 = 2;
 
-    std::string name2{"another name"};
-    std::vector<std::string> sights2{"house", "park"};
-    std::shared_ptr<Location> location2 = std::make_shared<City>(name2, sights2);
+    testRepository.addElement(elem1);
+    testRepository.addElement(elem2);
 
-    testRepository.addLocation(location1);
-    testRepository.addLocation(location2);
-
-    assert(testRepository.getAllLocations().size() == 2);
-    assert(testRepository.getAllLocations().at(0) == location1);
-    assert(testRepository.getAllLocations().at(1) == location2);
+    assert(testRepository.getAllelements().size() == 2);
+    assert(testRepository.getAllelements().at(0) == elem1);
+    assert(testRepository.getAllelements().at(1) == elem2);
 }
 
 void testRepositorySearchAndGet()
 {
-    Repository testRepository{};
+    Repository<int> testRepository{equalInts};
 
-    std::string name1{"name"};
-    std::vector<std::string> sights1{"house", "park"};
-    std::shared_ptr<Location> location1 = std::make_shared<City>(name1, sights1);
+    int elem1 = 1, elem2 = 2, elem3 = 3;
 
-    std::string name2{"another name"};
-    std::vector<std::string> sights2{"house", "park"};
-    std::shared_ptr<Location> location2 = std::make_shared<City>(name2, sights2);
+    testRepository.addElement(elem1);
+    testRepository.addElement(elem2);
 
-    std::string name3{"other name"};
-    std::vector<std::string> sights3{"house", "park"};
-    std::shared_ptr<Location> location3 = std::make_shared<City>(name3, sights3);
+    assert(testRepository.isElement(elem1));
+    assert(testRepository.isElement(elem2));
+    assert(!testRepository.isElement(elem3));
 
-    testRepository.addLocation(location1);
-    testRepository.addLocation(location2);
-
-    assert(testRepository.isLocation(location1));
-    assert(testRepository.isLocation(location2));
-    assert(!testRepository.isLocation(location3));
-
-    int index1 = testRepository.searchLocation(location1);
-    int index2 = testRepository.searchLocation(location2);
-    int index3 = testRepository.searchLocation(location3);
+    int index1 = testRepository.searchElement(elem1);
+    int index2 = testRepository.searchElement(elem2);
+    int index3 = testRepository.searchElement(elem3);
 
     assert(index1 == 0);
     assert(index2 == 1);
     assert(index3 == -1);
 
-    auto location1Copy = testRepository.getLocation(index1);
-    auto location2Copy = testRepository.getLocation(index2);
+    auto elem1Copy = testRepository.getElement(index1);
+    auto elem2Copy = testRepository.getElement(index2);
 
-    assert(location1 == location1Copy);
-    assert(location2 == location2Copy);
+    assert(elem1 == elem1Copy);
+    assert(elem2 == elem2Copy);
 
-    try 
+    try
     {
-        testRepository.getLocation(index3);
+        testRepository.getElement(index3);
     }
-    catch (const std::exception&)
+    catch (const std::exception &)
     {
         // Do nothing.
     }
@@ -267,31 +243,25 @@ void testRepositorySearchAndGet()
 
 void testRepositoryLinkAndUnlink()
 {
-    Repository testRepository{};
+    Repository<int> testRepository{equalInts};
 
-    std::string name1{"name"};
-    std::vector<std::string> sights1{"house", "park"};
-    std::shared_ptr<Location> location1 = std::make_shared<City>(name1, sights1);
+    int elem1 = 1, elem2 = 2;
 
-    std::string name2{"another name"};
-    std::vector<std::string> sights2{"house", "park"};
-    std::shared_ptr<Location> location2 = std::make_shared<City>(name2, sights2);
+    testRepository.addElement(elem1);
+    testRepository.addElement(elem2);
 
-    testRepository.addLocation(location1);
-    testRepository.addLocation(location2);
+    assert(testRepository.areElementsNeighbours(elem1, elem2) == false);
+    testRepository.linkElements(elem1, elem2, 1);
+    assert(testRepository.areElementsNeighbours(elem1, elem2));
+    assert(testRepository.getCost(elem1, elem2) == 1);
+    testRepository.unlinkElements(elem1, elem2);
+    assert(testRepository.areElementsNeighbours(elem1, elem2) == false);
 
-    assert(testRepository.areLocationsNeighbours(location1, location2) == false);
-    testRepository.linkLocations(location1, location2, 1);
-    assert(testRepository.areLocationsNeighbours(location1, location2));
-    assert(testRepository.getDistance(location1, location2) == 1);
-    testRepository.unlinkLocations(location1, location2);
-    assert(testRepository.areLocationsNeighbours(location1, location2) == false);
-
-    try 
+    try
     {
-        testRepository.getDistance(location1, location2);
+        testRepository.getCost(elem1, elem2);
     }
-    catch (const std::exception&)
+    catch (const std::exception &)
     {
         // Do nothing.
     }
