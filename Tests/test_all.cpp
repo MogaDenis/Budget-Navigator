@@ -2,6 +2,7 @@
 #include "../Headers/graph.hpp"
 #include "../Headers/city.hpp"
 #include "../Headers/repository.hpp"
+#include "../Headers/service.hpp"
 #include <assert.h>
 #include <iostream>
 
@@ -10,6 +11,7 @@ void testAll()
     testGraph();
     testCity();
     testRepository();
+    testService();
 }
 
 void testGraph()
@@ -31,6 +33,17 @@ void testRepository()
     testRepositoryGetAll();
     testRepositorySearchAndGet();
     testRepositoryLinkAndUnlink();
+}
+
+void testService()
+{
+    std::cout << "Test service\n";
+    testServiceConstructor();
+    testServiceAdd();
+    testServiceDelete();
+    testServiceGetAll();
+    testServiceSearchAndGet();
+    testServiceLinkAndUnlink();
 }
 
 bool equalInts(const int& first, const int& second)
@@ -260,6 +273,134 @@ void testRepositoryLinkAndUnlink()
     try
     {
         testRepository.getCost(elem1, elem2);
+    }
+    catch (const std::exception &)
+    {
+        // Do nothing.
+    }
+}
+
+
+void testServiceConstructor()
+{
+    Service testService{};
+
+    assert(testService.numberOfLocations() == 0);
+    assert(testService.noLocations());
+    assert(testService.getAllLocations().size() == 0);
+}
+
+void testServiceAdd()
+{
+    Service testService{};
+
+    std::string name1{"name1"}, name2{"name2"};
+    std::shared_ptr<Location> city1 = std::make_shared<City>(name1);
+    std::shared_ptr<Location> city2 = std::make_shared<City>(name2);
+
+    assert(testService.addLocation(city1));
+    assert(!testService.addLocation(city1));
+
+    assert(testService.addLocation(city2));
+
+    assert(testService.numberOfLocations() == 2);
+}
+
+void testServiceDelete()
+{
+    Service testService{};
+
+    std::string name1{"name1"}, name2{"name2"};
+    std::shared_ptr<Location> city1 = std::make_shared<City>(name1);
+    std::shared_ptr<Location> city2 = std::make_shared<City>(name2);
+
+    assert(testService.addLocation(city1));
+    assert(testService.addLocation(city2));
+
+    assert(testService.deleteLocation(city1));
+    assert(!testService.deleteLocation(city1));
+    assert(testService.deleteLocation(city2));
+
+    assert(testService.numberOfLocations() == 0);
+}
+
+void testServiceGetAll()
+{
+    Service testService{};
+
+    std::string name1{"name1"}, name2{"name2"};
+    std::shared_ptr<Location> city1 = std::make_shared<City>(name1);
+    std::shared_ptr<Location> city2 = std::make_shared<City>(name2);
+
+    assert(testService.addLocation(city1));
+    assert(testService.addLocation(city2));
+
+    assert(testService.getAllLocations().size() == 2);
+    assert(testService.getAllLocations().at(0) == city1);
+    assert(testService.getAllLocations().at(1) == city2);
+}
+
+void testServiceSearchAndGet()
+{
+    Service testService{};
+
+    std::string name1{"name1"}, name2{"name2"}, name3{"name3"};
+    std::shared_ptr<Location> city1 = std::make_shared<City>(name1);
+    std::shared_ptr<Location> city2 = std::make_shared<City>(name2);
+    std::shared_ptr<Location> city3 = std::make_shared<City>(name3);
+
+    assert(testService.addLocation(city1));
+    assert(testService.addLocation(city2));
+
+    assert(testService.isLocation(city1));
+    assert(testService.isLocation(city2));
+    assert(!testService.isLocation(city3));
+
+    int index1 = testService.searchLocation(city1);
+    int index2 = testService.searchLocation(city2);
+    int index3 = testService.searchLocation(city3);
+
+    assert(index1 == 0);
+    assert(index2 == 1);
+    assert(index3 == -1);
+
+    auto city1Copy = testService.getLocation(index1);
+    auto city2Copy = testService.getLocation(index2);
+
+    assert(city1 == city1Copy);
+    assert(city2 == city2Copy);
+
+    try
+    {
+        testService.getLocation(index3);
+    }
+    catch (const std::exception &)
+    {
+        // Do nothing.
+    }
+}
+
+void testServiceLinkAndUnlink()
+{
+    Service testService{};
+
+    std::string name1{"name1"}, name2{"name2"};
+    std::shared_ptr<Location> city1 = std::make_shared<City>(name1);
+    std::shared_ptr<Location> city2 = std::make_shared<City>(name2);
+
+    assert(testService.addLocation(city1));
+    assert(testService.addLocation(city2));
+
+    assert(testService.areLocationsNeighbours(city1, city2) == false);
+    testService.linkLocations(city1, city2, 1);
+    assert(testService.areLocationsNeighbours(city1, city2));
+    assert(testService.getDistance(city1, city2) == 1);
+    testService.unlinkLocations(city1, city2);
+    assert(testService.areLocationsNeighbours(city1, city2) == false);
+
+    try
+    {
+        testService.getDistance(city1, city2);
     }
     catch (const std::exception &)
     {
